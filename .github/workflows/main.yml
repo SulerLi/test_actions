@@ -12,7 +12,7 @@ jobs:
 
     - name: Set up Docker container
       run: |
-        docker run -d --name centos7 -v $(pwd):/fio centos7
+        docker run -d --name centos7 -v $(pwd):/fio centos:centos7
         docker exec centos7 yum install -y libaio-devel jq git gcc make
 
     - name: Get releases
