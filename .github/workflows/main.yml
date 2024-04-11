@@ -1,0 +1,29 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker container
+      run: |
+        docker run -d --name centos7 -v $(pwd):/fio centos:7
+        docker exec centos7 yum install -y libaio-devel jq git gcc make
+
+    - name: Get releases
+      id: get_releases
+      run: |
+        releases=$(curl --silent "https://api.github.com/repos/axboe/fio/releases" | jq -r '.[].tag_name')
+        echo "::set-output name=releases::$releases"
+
+    - name: Build all releases
+      run: |
+        for release in ${{ steps.get_releases.outputs.releases }}
+        do
+          docker exec centos7 bash -c "cd /fio && git checkout $release && make clean && make"
+        done
